@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime? 
+  password      String    
+  quantumPubKey String?   
+  notes         Note[]
+  resumes       Resume[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model VerificationToken {
+  id      String   @id @default(cuid())
+  email   String   @unique
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model Note {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   
+  summary     String?  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  quizzes     Quiz[]
+  flashcards  Flashcard[]
+  createdAt   DateTime @default(now())
+}
+
+model Quiz {
+  id        String   @id @default(cuid())
+  noteId    String
+  note      Note     @relation(fields: [noteId], references: [id])
+  questions Json     
+  createdAt DateTime @default(now())
+}
+
+model Flashcard {
+  id        String   @id @default(cuid())
+  noteId    String
+  note      Note     @relation(fields: [noteId], references: [id])
+  front     String
+  back      String
+  createdAt DateTime @default(now())
+}
+
+model Resume {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  parsedText  String
+  jobDesc     String?
+  skillGaps   Json?    
+  createdAt   DateTime @default(now())
+}
