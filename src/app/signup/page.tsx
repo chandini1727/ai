@@ -39,7 +39,7 @@ export default function SignupPage() {
                         <Shield className="text-white w-6 h-6" />
                     </div>
                     <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Create Account</h1>
-                    <p className="text-slate-500 text-sm font-medium">Join the <span className="font-bold text-blue-600">Quantum AI</span> secure network.</p>
+                    <p className="text-slate-500 text-sm font-medium">Join the <span className="font-bold text-blue-600">SmartLearn AI</span> secure network.</p>
                 </div>
 
                 <form onSubmit={handleSignup} className="space-y-6">

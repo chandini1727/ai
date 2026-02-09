@@ -25,7 +25,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
-    const [activeTab, setActiveTab] = useState("overview");
     const [notes, setNotes] = useState<any[]>([]);
     const [isLoadingNotes, setIsLoadingNotes] = useState(true);
     const [user, setUser] = useState<any>(null);
@@ -60,149 +59,40 @@ export default function DashboardPage() {
     };
 
     return (
-        <div className="flex h-screen bg-[#f8fafc] text-[#1e293b] overflow-hidden font-sans">
-            {/* Sidebar */}
-            <aside className="w-64 border-r border-slate-200 bg-white flex flex-col z-20">
-                <div className="p-8 flex items-center space-x-3">
+        <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] font-sans">
+            {/* Minimal Header */}
+            <header className="h-20 border-b border-slate-200 flex items-center justify-between px-10 sticky top-0 bg-white/80 backdrop-blur-xl z-50">
+                <div className="flex items-center space-x-3">
                     <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-100">
                         <Shield className="text-white w-5 h-5" />
                     </div>
-                    <span className="text-lg font-bold tracking-tight text-slate-900 leading-none">StudyFlow<br /><span className="text-[10px] text-blue-600 uppercase tracking-widest font-black">Dashboard</span></span>
+                    <span className="text-lg font-bold tracking-tight text-slate-900 leading-none">SmartLearn AI<br /><span className="text-[10px] text-blue-600 uppercase tracking-widest font-black">Control Center</span></span>
                 </div>
 
-                <nav className="flex-grow px-4 mt-6 space-y-1.5">
-                    <SidebarItem icon={<LayoutDashboard size={18} />} label="Overview" active={activeTab === "overview"} onClick={() => setActiveTab("overview")} />
-                    <SidebarItem icon={<FileText size={18} />} label="Document Library" active={activeTab === "notes"} onClick={() => setActiveTab("notes")} />
-                    <SidebarItem icon={<Target size={18} />} label="Career Matrix" active={activeTab === "career"} onClick={() => setActiveTab("career")} />
-                    <SidebarItem icon={<Settings size={18} />} label="Security Settings" active={activeTab === "training"} onClick={() => setActiveTab("training")} />
-                </nav>
-
-                <div className="p-6 border-t border-slate-50">
-                    <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all text-xs font-black uppercase tracking-widest"
-                    >
-                        <LogOut size={16} />
-                        <span>Terminate</span>
+                <div className="flex items-center space-x-6">
+                    <div className="hidden lg:flex items-center space-x-2 px-3 py-1.5 bg-blue-50 border border-blue-100 rounded-lg">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                        <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Active NLP Engine</span>
+                    </div>
+                    <button onClick={handleLogout} className="text-xs font-black text-slate-400 hover:text-red-500 uppercase tracking-widest transition-colors flex items-center space-x-2">
+                        <LogOut size={14} />
+                        <span>Sign Out</span>
                     </button>
-                </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className="flex-grow overflow-y-auto relative">
-                <header className="h-20 border-b border-slate-200 flex items-center justify-between px-10 sticky top-0 bg-white/80 backdrop-blur-xl z-50">
-                    <div className="relative w-96 group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input
-                            placeholder="Search repositories..."
-                            className="w-full bg-[#f1f5f9] border border-slate-200 rounded-xl pl-12 pr-4 py-2.5 text-xs font-bold focus:bg-white focus:ring-4 focus:ring-blue-500/5 transition-all text-slate-600"
-                        />
-                    </div>
-
-                    <div className="flex items-center space-x-6">
-                        <div className="hidden lg:flex items-center space-x-2 px-3 py-1.5 bg-blue-50 border border-blue-100 rounded-lg">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
-                            <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Quantum Secured</span>
+                    <div className="flex items-center space-x-4 pl-6 border-l border-slate-200">
+                        <div className="text-right">
+                            <p className="text-xs font-black text-slate-900 leading-none mb-1">{user?.name || "Member"}</p>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Academic Profile</p>
                         </div>
-                        <div className="flex items-center space-x-4 pl-6 border-l border-slate-200">
-                            <div className="text-right">
-                                <p className="text-xs font-black text-slate-900 leading-none mb-1">{user?.name || "Member"}</p>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Enterprise Plan</p>
-                            </div>
-                            <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center font-bold text-white text-xs shadow-lg">
-                                {user?.name?.[0]?.toUpperCase() || "S"}
-                            </div>
+                        <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center font-bold text-white text-xs shadow-lg">
+                            {user?.name?.[0]?.toUpperCase() || "S"}
                         </div>
                     </div>
-                </header>
-
-                <div className="p-12 max-w-7xl mx-auto pb-32">
-                    {activeTab === "overview" && <OverviewTab notes={notes} isLoading={isLoadingNotes} />}
-                    {activeTab === "notes" && <NotesTab onProcessed={() => fetchNotes(user.id)} existingNotes={notes} userId={user?.id} />}
-                    {activeTab === "career" && <CareerTab userId={user?.id} />}
-                    {activeTab === "training" && <div className="py-20 text-center text-slate-400 font-bold italic">Module under encryption. Contact admin.</div>}
                 </div>
+            </header>
+
+            <main className="p-8 md:p-12 max-w-7xl mx-auto pb-32">
+                <NotesTab onProcessed={() => fetchNotes(user.id)} existingNotes={notes} userId={user?.id} />
             </main>
-        </div>
-    );
-}
-
-function SidebarItem({ icon, label, active, onClick }: { icon: any, label: string, active: boolean, onClick: () => void }) {
-    return (
-        <button
-            onClick={onClick}
-            className={`w-full flex items-center space-x-4 px-4 py-3 rounded-xl transition-all text-sm font-bold ${active
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-100"
-                    : "text-slate-500 hover:text-blue-600 hover:bg-blue-50/50"
-                }`}
-        >
-            <span className={active ? "text-white" : "text-slate-300 group-hover:text-blue-400"}>{icon}</span>
-            <span>{label}</span>
-        </button>
-    );
-}
-
-function OverviewTab({ notes, isLoading }: { notes: any[], isLoading: boolean }) {
-    return (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="mb-12 flex justify-between items-end">
-                <div>
-                    <h1 className="text-4xl font-black tracking-tight text-slate-900 mb-2">Welcome Back</h1>
-                    <p className="text-slate-500 font-bold">Your academic intelligence dashboard is ready.</p>
-                </div>
-                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-white border border-slate-200 px-4 py-2 rounded-lg shadow-sm">
-                    System Hub: <span className="text-blue-600 ml-1">Connected</span>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-                <OverviewStat title="Total Library" value={notes.length.toString()} icon={<FileText size={20} />} />
-                <OverviewStat title="Semantic Score" value="94%" icon={<Command size={20} />} />
-                <OverviewStat title="Encryption" value="Active" icon={<Shield size={20} />} />
-            </div>
-
-            <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-                <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
-                    <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">Recent Documentation</h3>
-                    <button className="text-[10px] font-black text-blue-600 hover:underline tracking-widest uppercase">View Archive</button>
-                </div>
-                <div className="divide-y divide-slate-100">
-                    {isLoading ? (
-                        <div className="py-20 flex justify-center"><Plus className="w-6 h-6 animate-spin text-slate-200" /></div>
-                    ) : notes.length === 0 ? (
-                        <div className="py-32 text-center text-slate-400 font-bold italic text-sm">
-                            No data segments found. Use the Library tab to import materials.
-                        </div>
-                    ) : (
-                        notes.slice(0, 5).map((note, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-6 hover:bg-blue-50/30 transition-all cursor-pointer group">
-                                <div className="flex items-center space-x-6">
-                                    <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                                        <FileText size={18} />
-                                    </div>
-                                    <div>
-                                        <p className="font-extrabold text-slate-900 text-[15px]">{note.title}</p>
-                                        <p className="text-[10px] text-slate-400 font-black uppercase mt-1 tracking-widest">{new Date(note.createdAt).toDateString()}</p>
-                                    </div>
-                                </div>
-                                <ArrowRight className="w-5 h-5 text-slate-200 group-hover:text-blue-600 transition-colors" />
-                            </div>
-                        ))
-                    )}
-                </div>
-            </div>
-        </motion.div>
-    );
-}
-
-function OverviewStat({ title, value, icon }: { title: string, value: string, icon: any }) {
-    return (
-        <div className="p-8 bg-white border border-slate-200 rounded-3xl shadow-sm hover:border-blue-200 hover:shadow-lg hover:shadow-blue-50 transition-all">
-            <div className="flex items-center justify-between mb-4">
-                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">{icon}</div>
-                <span className="text-3xl font-black tracking-tighter text-slate-900">{value}</span>
-            </div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">{title}</p>
         </div>
     );
 }
@@ -318,188 +208,137 @@ function ModuleAction({ title, description, onClick, icon }: { title: string, de
     );
 }
 
-function CareerTab({ userId }: { userId?: string }) {
-    const [step, setStep] = useState(1);
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [resumeText, setResumeText] = useState("");
-    const [jobDescription, setJobDescription] = useState("");
-    const [result, setResult] = useState<any>(null);
 
-    const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        setIsProcessing(true);
-        const formData = new FormData();
-        formData.append("file", file);
-
-        try {
-            const res = await fetch("/api/extract", { method: "POST", body: formData });
-            const data = await res.json();
-            setResumeText(data.text);
-            setStep(2);
-        } catch (err) {
-            console.error("Extraction failed");
-        } finally {
-            setIsProcessing(false);
-        }
-    };
-
-    const startAnalysis = async () => {
-        if (!jobDescription || !userId) return;
-        setIsProcessing(true);
-        try {
-            const res = await fetch("/api/career/analyze", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    resumeText,
-                    jobDescription,
-                    userId
-                })
-            });
-            const data = await res.json();
-            setResult(data.skillGaps);
-            setStep(3);
-        } catch (err) {
-            console.error("Analysis failed");
-        } finally {
-            setIsProcessing(false);
-        }
-    };
-
-    return (
-        <div className="max-w-4xl mx-auto space-y-12 pb-32">
-            <div>
-                <h1 className="text-4xl font-black tracking-tight text-slate-900">Market Matrix</h1>
-                <p className="text-slate-500 font-bold text-lg mt-2">Align your professional profile with industry standards.</p>
-            </div>
-
-            {step === 1 && (
-                <div className="p-20 bg-white border border-slate-200 rounded-[3rem] text-center shadow-sm">
-                    <div className="w-20 h-20 bg-blue-50 rounded-[2rem] flex items-center justify-center mx-auto mb-10 border border-blue-100">
-                        <Upload className="w-10 h-10 text-blue-600" />
-                    </div>
-                    <h2 className="text-3xl font-black mb-4 text-slate-900">Upload Professional Profile</h2>
-                    <p className="text-slate-500 mb-12 max-w-sm mx-auto font-medium">We'll extract your skills and experience for comparative analysis.</p>
-                    <label className="inline-block px-14 py-5 bg-slate-900 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl cursor-pointer hover:bg-slate-800 transition-all shadow-xl">
-                        {isProcessing ? "Extracting Data..." : "Select Document"}
-                        <input type="file" className="hidden" onChange={handleResumeUpload} accept=".pdf,.docx" disabled={isProcessing} />
-                    </label>
-                </div>
-            )}
-
-            {step === 2 && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-12 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm">
-                    <h2 className="text-[10px] font-black mb-8 tracking-[0.5em] text-blue-600 uppercase">Target Requirements</h2>
-                    <textarea
-                        className="w-full h-80 bg-slate-50 border border-slate-200 rounded-2xl p-10 text-slate-900 text-sm mb-10 font-medium leading-relaxed focus:bg-white focus:ring-4 focus:ring-blue-500/5 transition-all outline-none"
-                        placeholder="Paste the target job description details here..."
-                        value={jobDescription}
-                        onChange={(e) => setJobDescription(e.target.value)}
-                    />
-                    <button
-                        onClick={startAnalysis}
-                        className="w-full py-6 bg-blue-600 text-white font-black text-xs uppercase tracking-[0.3em] rounded-2xl hover:bg-blue-700 transition-all shadow-xl shadow-blue-100"
-                    >
-                        {isProcessing ? "Running Comparative Engine..." : "Execute Alignment Metric"}
-                    </button>
-                </motion.div>
-            )}
-
-            {step === 3 && result && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-12">
-                    <div className="p-16 bg-white border border-slate-200 rounded-[3rem] shadow-sm">
-                        <div className="flex justify-between items-start mb-20 border-b border-slate-100 pb-16">
-                            <div>
-                                <h1 className="text-5xl font-black tracking-tighter uppercase whitespace-pre-wrap leading-[0.85] text-slate-900">ALIGNMENT<br />SCORE</h1>
-                                <p className="text-blue-600 font-extrabold text-xs mt-6 tracking-[0.4em] uppercase">Confidential System Metric</p>
-                            </div>
-                            <div className="text-[140px] font-black leading-none tracking-tighter text-blue-600">
-                                {result.matchPercentage}<span className="text-[50px] font-black ml-1">%</span>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-24">
-                            <div className="space-y-10">
-                                <h4 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em] mb-10 pb-4 border-b border-slate-50">Verified proficiencies</h4>
-                                <div className="flex flex-wrap gap-3">
-                                    {result.matches?.map((m: any) => (
-                                        <span key={m} className="px-4 py-2 bg-blue-50 border border-blue-100 text-blue-700 rounded-xl text-xs font-black uppercase tracking-wider">{m}</span>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="space-y-10">
-                                <h4 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em] mb-10 pb-4 border-b border-slate-50">Strategic Gaps</h4>
-                                <div className="flex flex-wrap gap-3">
-                                    {result.gaps?.map((g: any) => (
-                                        <span key={g} className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-wider">{g}</span>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mt-24 pt-20 border-t border-slate-100">
-                            <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-[0.5em] mb-12">Growth Recommendation</h4>
-                            <div className="bg-blue-50/50 p-10 rounded-[2.5rem] border-l-8 border-blue-600">
-                                <p className="text-slate-800 text-2xl leading-relaxed font-extrabold italic">"{result.recommendations}"</p>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
-            )}
-        </div>
-    );
-}
 
 function QuizModal({ note, onClose }: { note: any, onClose: () => void }) {
     const questions = note.quizzes?.[0]?.questions || [];
     const [idx, setIdx] = useState(0);
     const [score, setScore] = useState(0);
+    const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+    const [showExplanation, setShowExplanation] = useState(false);
     const [done, setDone] = useState(false);
 
     const handleAnswer = (ansIdx: number) => {
-        if (questions[idx].options[ansIdx] === questions[idx].answer) setScore(s => s + 1);
-        if (idx < questions.length - 1) setIdx(i => i + 1);
-        else setDone(true);
+        if (selectedIdx !== null) return;
+
+        setSelectedIdx(ansIdx);
+        setShowExplanation(true);
+
+        if (questions[idx].options[ansIdx] === questions[idx].answer) {
+            setScore(s => s + 1);
+        }
     };
 
+    const nextQuestion = () => {
+        if (idx < questions.length - 1) {
+            setIdx(i => i + 1);
+            setSelectedIdx(null);
+            setShowExplanation(false);
+        } else {
+            setDone(true);
+        }
+    };
+
+    const currentQuestion = questions[idx];
+
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white p-6">
-            <div className="w-full max-w-4xl">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white p-6 overflow-y-auto">
+            <div className="w-full max-w-4xl py-12">
                 {!done ? (
-                    <div className="space-y-24">
+                    <div className="space-y-12">
                         <div className="flex justify-between items-center text-[10px] font-black tracking-[0.5em] text-slate-300">
-                            <span className="bg-slate-50 px-4 py-2 rounded-lg border border-slate-100">EVALUATION METRIC - {idx + 1} / {questions.length}</span>
+                            <span className="bg-slate-50 px-4 py-2 rounded-lg border border-slate-100 uppercase">Knowledge Check - {idx + 1} / {questions.length}</span>
                             <button onClick={onClose} className="hover:text-red-500 transition-colors"><X size={32} /></button>
                         </div>
-                        <h2 className="text-6xl font-black tracking-tight leading-[1.1] text-slate-900">{questions[idx]?.question}</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {questions[idx]?.options.map((opt: string, i: number) => (
-                                <button
-                                    key={i}
-                                    onClick={() => handleAnswer(i)}
-                                    className="p-10 bg-white border border-slate-200 rounded-[2rem] text-left text-xl font-black hover:border-blue-600 hover:shadow-2xl hover:shadow-blue-50 transition-all font-sans relative group"
-                                >
-                                    <span className="absolute top-4 left-4 text-[10px] text-slate-200 group-hover:text-blue-500 transition-colors">OPTION_0{i + 1}</span>
-                                    {opt}
-                                </button>
-                            ))}
+
+                        <div className="space-y-8">
+                            <h2 className="text-4xl md:text-5xl font-black tracking-tight leading-[1.2] text-slate-900">{currentQuestion?.question}</h2>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {currentQuestion?.options.map((opt: string, i: number) => {
+                                    const isCorrect = opt === currentQuestion.answer;
+                                    const isSelected = i === selectedIdx;
+
+                                    let btnClass = "p-8 bg-white border border-slate-200 rounded-2xl text-left text-lg font-bold transition-all relative group h-full flex flex-col justify-center";
+
+                                    if (selectedIdx !== null) {
+                                        if (isCorrect) {
+                                            btnClass = "p-8 bg-green-50 border-2 border-green-500 rounded-2xl text-left text-lg font-bold transition-all relative h-full flex flex-col justify-center text-green-700";
+                                        } else if (isSelected) {
+                                            btnClass = "p-8 bg-red-50 border-2 border-red-500 rounded-2xl text-left text-lg font-bold transition-all relative h-full flex flex-col justify-center text-red-700";
+                                        } else {
+                                            btnClass = "p-8 bg-white border border-slate-100 rounded-2xl text-left text-lg font-bold opacity-40 transition-all relative h-full flex flex-col justify-center";
+                                        }
+                                    } else {
+                                        btnClass += " hover:border-blue-500 hover:bg-blue-50/30 cursor-pointer";
+                                    }
+
+                                    return (
+                                        <button
+                                            key={i}
+                                            onClick={() => handleAnswer(i)}
+                                            className={btnClass}
+                                        >
+                                            <span className={`absolute top-3 left-4 text-[9px] font-black uppercase tracking-widest ${isSelected ? 'opacity-100' : 'opacity-30'}`}>Option {i + 1}</span>
+                                            {opt}
+                                            {selectedIdx !== null && isCorrect && <CheckCircle2 size={20} className="absolute top-3 right-4 text-green-600" />}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
+
+                        <AnimatePresence>
+                            {showExplanation && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-8 bg-slate-50 rounded-3xl border border-slate-200"
+                                >
+                                    <div className="flex items-center space-x-3 mb-4">
+                                        <div className={`w-2 h-2 rounded-full ${currentQuestion.options[selectedIdx!] === currentQuestion.answer ? 'bg-green-500' : 'bg-red-500'}`} />
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Analysis & Context</h4>
+                                    </div>
+                                    <p className="text-slate-700 font-medium leading-relaxed">
+                                        {currentQuestion.explanation}
+                                    </p>
+
+                                    <button
+                                        onClick={nextQuestion}
+                                        className="mt-8 flex items-center space-x-3 text-blue-600 font-black text-xs uppercase tracking-widest hover:translate-x-2 transition-transform"
+                                    >
+                                        <span>{idx < questions.length - 1 ? "Next Challenge" : "Finalize Evaluation"}</span>
+                                        <ArrowRight size={16} />
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 ) : (
-                    <div className="text-center space-y-16">
-                        <div className="w-32 h-32 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-12 shadow-inner border border-blue-100">
-                            <CheckCircle2 size={64} className="text-blue-600" />
+                    <div className="text-center space-y-12">
+                        <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-8 border border-blue-100">
+                            <CheckCircle2 size={48} className="text-blue-600" />
                         </div>
-                        <h1 className="text-[160px] font-black tracking-tighter leading-none text-slate-900">{(score / questions.length) * 100}%</h1>
-                        <p className="text-blue-600 font-extrabold uppercase tracking-[0.8em] text-xs">RETENTION ACCURACY VERIFIED</p>
-                        <button onClick={onClose} className="px-20 py-6 bg-slate-900 text-white font-black text-xs uppercase tracking-[0.4em] rounded-2xl hover:bg-black transition-all shadow-2xl">RETURN TO SYSTEM HUB</button>
+                        <div className="space-y-4">
+                            <h1 className="text-8xl md:text-9xl font-black tracking-tighter text-slate-900 leading-none">
+                                {Math.round((score / questions.length) * 100)}%
+                            </h1>
+                            <p className="text-blue-600 font-black uppercase tracking-[0.5em] text-xs">Knowledge Retrieval Accuracy</p>
+                        </div>
+                        <div className="max-w-xs mx-auto text-slate-400 text-xs font-medium leading-relaxed">
+                            Your performance has been logged and integrated into your long-term memory profile.
+                        </div>
+                        <button
+                            onClick={onClose}
+                            className="px-12 py-5 bg-slate-900 text-white font-black text-xs uppercase tracking-[0.4em] rounded-2xl hover:bg-black transition-all shadow-xl"
+                        >
+                            Return to System Hub
+                        </button>
                     </div>
                 )}
             </div>
         </div>
-    )
+    );
 }
 
 function FlashcardModal({ note, onClose }: { note: any, onClose: () => void }) {

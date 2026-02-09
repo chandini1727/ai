@@ -38,7 +38,7 @@ export default function LoginPage() {
                         <Shield className="text-white w-6 h-6" />
                     </div>
                     <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Sign In</h1>
-                    <p className="text-slate-500 text-sm font-medium">Access your <span className="font-bold text-blue-600">Quantum AI</span> account.</p>
+                    <p className="text-slate-500 text-sm font-medium">Access your <span className="font-bold text-blue-600">SmartLearn AI</span> account.</p>
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-6">
