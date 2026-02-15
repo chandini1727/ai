@@ -551,7 +551,7 @@ function QuizModal({ note, onClose }: { note: any, onClose: () => void }) {
                                     </div>
                                     <button
                                         onClick={onClose}
-                                        className="p-2 hover:bg-slate-50 rounded-xl transition-all text-slate-400 hover:text-red-500 hover:rotate-90"
+                                        className="p-2  hover:bg-slate-50 rounded-xl transition-all text-slate-400 hover:text-red-500 hover:rotate-90"
                                     >
                                         <X size={20} />
                                     </button>
