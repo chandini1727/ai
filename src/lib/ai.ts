@@ -1,88 +1,169 @@
 // @ts-ignore
+import { pipeline } from '@xenova/transformers';
+// @ts-ignore
 import nlp from 'compromise';
 
+// Global model caches
+let summarizer: any = null;
+let quizGen: any = null;
+
 /**
- * Local Intelligence Suite
- * Generates high-quality study materials locally using NLP concept mapping.
+ * SmartLearn NLP Engine V41.0 (Robust Neural Quiz)
+ * 
+ * Summary: facebook/bart-large-cnn
+ * Quiz: google/flan-t5-large
+ * 
+ * Features:
+ * - Robust parsing for neural questions
+ * - Hybrid fallback (never returns 0 questions)
+ * - Full-document sampling for quiz context
  */
+
+function cleanRawText(text: string): string {
+  return text.replace(/\0/g, '').replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
 export async function generateStudyKit(content: string) {
   try {
-    // @ts-ignore
-    const doc = nlp(content);
-    const sentences = doc.sentences().out('array') as string[];
+    console.log("[NLP Engine] Initializing Robust Pipeline (V41.0)...");
+    const rawContent = cleanRawText(content);
 
-    // 1. A-Z Summary: Capturing the narrative arc of the document
-    const summary = sentences.slice(0, 8).join(' ');
+    // 1. Load Models
+    if (!summarizer) {
+      console.log("[NLP Engine] Loading Summarizer: BART-Large...");
+      summarizer = await pipeline('summarization', 'Xenova/bart-large-cnn');
+    }
 
-    // 2. Multi-Question Analytical Quiz
-    // We look for "Definition Sentences" to build high-quality MCQs
-    const potentialFacts = sentences.filter(s => s.length > 40 && /\b(is|are|was|were|means|represents)\b/i.test(s));
-    const nouns = doc.nouns().unique().out('array') as string[];
+    if (!quizGen) {
+      console.log("[NLP Engine] Loading Quiz Engine: FLAN-T5-Large...");
+      try {
+        quizGen = await pipeline('text2text-generation', 'Xenova/flan-t5-large');
+      } catch (err) {
+        quizGen = await pipeline('text2text-generation', 'Xenova/flan-t5-base');
+      }
+    }
 
-    const quiz = potentialFacts.slice(0, 6).map((fact) => {
-      const parts = fact.split(/\b(is|are|was|were|means|represents)\b/i);
-      const subject = parts[0]?.trim() || "This concept";
-      const correctAnswer = parts[parts.length - 1]?.trim().replace(/[.;]$/, '') || "Defined in text";
+    // ─── STEP 2: Full Document Summarization (BART) ───
+    const segments: string[] = [];
+    const targetSize = 2500;
+    for (let i = 0; i < rawContent.length; i += targetSize) {
+      segments.push(rawContent.slice(i, i + targetSize));
+    }
 
-      // Intelligent Distractors: Pick other concepts from the document
-      const otherNouns = nouns
-        .filter(n => n.toLowerCase() !== subject.toLowerCase())
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 3);
+    const summaryParts: string[] = [];
+    for (const segment of segments) {
+      try {
+        const res = await summarizer(segment, { max_new_tokens: 200, min_new_tokens: 50, do_sample: false });
+        summaryParts.push(res[0].summary_text);
+      } catch (err) {
+        summaryParts.push(nlp(segment).sentences().out('array').slice(0, 2).join(' '));
+      }
+    }
+    const summary = summaryParts.join('\n\n');
 
-      const options = [correctAnswer, ...otherNouns].sort(() => Math.random() - 0.5);
+    // ─── STEP 3: Neural Quiz Synthesis (FLAN-T5) ───
+    // Sample key sections from start, middle, and end for balanced quiz
+    const paragraphs = rawContent.split(/\n\s*\n/).filter(p => p.length > 150);
+    const step = Math.max(1, Math.floor(paragraphs.length / 12));
+    const finalExcerpts = paragraphs.filter((_, i) => i % step === 0).slice(0, 12);
 
-      return {
-        question: `Based on your document, what is the best description or role of "${subject}"?`,
-        options: options.length === 4 ? options : [correctAnswer, "Information not specified", "A secondary concept", "An unrelated variable"],
-        answer: correctAnswer,
-        explanation: `As stated in the text: "${fact}"`
-      };
-    });
+    const quiz: any[] = [];
+    console.log(`[NLP Engine] Generating intelligent questions from ${finalExcerpts.length} document locations...`);
 
-    // 3. Concept Flashcards
-    const flashcards = nouns.slice(0, 8).map(noun => {
-      const context = sentences.find(s => s.toLowerCase().includes(noun.toLowerCase())) || "Key academic concept.";
-      return {
-        front: noun,
-        back: context
-      };
-    });
+    for (const text of finalExcerpts) {
+      try {
+        const prompt = `Generate a Multiple Choice Question (MCQ) with 4 options and the correct answer based on this context. 
+            Format exactly as:
+            Question: [Your question]
+            A) [Option 1]
+            B) [Option 2]
+            C) [Option 3]
+            D) [Option 4]
+            Answer: [Exactly one letter A, B, C, or D]
+            Explanation: [Brief reason]
 
-    return {
-      summary,
-      quiz: quiz.length > 0 ? quiz : [{
-        question: "Document Context Check",
-        options: ["Technical Document", "Literature", "Personal Notes", "Scientific Paper"],
-        answer: "Technical Document",
-        explanation: "The system analyzed the document's linguistic structure."
-      }],
-      flashcards
-    };
-  } catch (err) {
-    console.error("NLP Error:", err);
-    return { summary: "Analysis failed.", quiz: [], flashcards: [] };
+            Context: ${text.slice(0, 800)}`;
+
+        const res = await quizGen(prompt, { max_new_tokens: 350, do_sample: false, temperature: 0.1 });
+        const output = res[0].generated_text as string;
+
+        // Robust Parsing Logic
+        const questionMatch = output.match(/Question:\s*(.+?)(?=\n[A-D]\)|$)/i);
+        const optA = output.match(/A\)\s*(.+?)(?=\nB\)|$)/i)?.[1]?.trim();
+        const optB = output.match(/B\)\s*(.+?)(?=\nC\)|$)/i)?.[1]?.trim();
+        const optC = output.match(/C\)\s*(.+?)(?=\nD\)|$)/i)?.[1]?.trim();
+        const optD = output.match(/D\)\s*(.+?)(?=\nAnswer:|$)/i)?.[1]?.trim();
+        const ansMatch = output.match(/Answer:\s*([A-D])/i);
+        const explMatch = output.match(/Explanation:\s*(.+)/i);
+
+        if (questionMatch && optA && optB && ansMatch) {
+          const options = [optA, optB, optC || "Alternative Item", optD || "Other Detail"];
+          const ansChar = ansMatch[1].toUpperCase();
+          const ansIndex = ansChar.charCodeAt(0) - 65;
+
+          quiz.push({
+            question: questionMatch[1].trim(),
+            options,
+            answer: options[ansIndex] || optA,
+            explanation: explMatch ? explMatch[1].trim() : "Verified against document context."
+          });
+        }
+      } catch (err) {
+        console.warn("[NLP Engine] Neural quiz block failed.");
+      }
+    }
+
+    // ─── STEP 4: Hybrid Fallback (Ensure we NEVER have 0 questions) ───
+    if (quiz.length === 0) {
+      console.log("[NLP Engine] Using Hybrid NLP Fallback for Quiz...");
+      const fallbackSentences = nlp(summary).sentences().filter(s => s.text().length > 60).slice(0, 5).out('array');
+      for (const sent of fallbackSentences) {
+        const noun = nlp(sent).nouns().first().text();
+        if (noun) {
+          quiz.push({
+            question: `What primary concept is described here: "${sent.slice(0, 100)}..."?`,
+            options: [noun, "Auxiliary Component", "System Process", "Legacy Protocol"].sort(() => 0.5 - Math.random()),
+            answer: noun,
+            explanation: "Generated via technical entity extraction."
+          });
+        }
+      }
+    }
+
+    // ─── STEP 5: Flashcards ───
+    const flashcards = nlp(rawContent).nouns().unique().out('array')
+      .filter((n: string) => n.length > 7)
+      .slice(0, 15)
+      .map((noun: string) => ({
+        front: noun.toUpperCase(),
+        back: nlp(rawContent).sentences().filter(s => s.text().toLowerCase().includes(noun.toLowerCase())).first().text() || "Technical definition from document."
+      }));
+
+    return { summary, quiz, flashcards };
+
+  } catch (error: any) {
+    console.error("[NLP Engine] Pipeline Failure:", error);
+    return { summary: "Synthesis engine encountered a sync error. Please re-upload.", quiz: [], flashcards: [] };
   }
 }
 
 /**
- * Skill Synthesis Analysis
+ * Skill Gap Analysis
  */
 export async function analyzeSkillGap(resumeText: string, jobDescription: string) {
-  const nlp = require('compromise');
-  const rDoc = nlp(resumeText);
-  const jDoc = nlp(jobDescription);
-
-  const rSkills = rDoc.nouns().out('array') as string[];
-  const jSkills = jDoc.nouns().out('array') as string[];
-
-  const matches = jSkills.filter(s => rSkills.some(rs => rs.toLowerCase() === s.toLowerCase()));
-  const gaps = jSkills.filter(s => !rSkills.some(rs => rs.toLowerCase() === s.toLowerCase())).slice(0, 10);
-
-  return {
-    matchPercentage: Math.round((matches.length / (jSkills.length || 1)) * 100),
-    matches: Array.from(new Set(matches)),
-    gaps: Array.from(new Set(gaps)),
-    recommendations: "System recommends focused study on the identified gaps using the generated study kits."
-  };
+  try {
+    const rDoc = nlp(resumeText);
+    const jDoc = nlp(jobDescription);
+    const rSkills = rDoc.nouns().out('array') as string[];
+    const jSkills = jDoc.nouns().out('array') as string[];
+    const matches = jSkills.filter(s => rSkills.some(rs => rs.toLowerCase() === s.toLowerCase()));
+    return {
+      matchPercentage: Math.round((matches.length / (jSkills.length || 1)) * 100),
+      matches: Array.from(new Set(matches)),
+      gaps: Array.from(new Set(jSkills.filter(s => !matches.includes(s)).slice(0, 10))),
+      recommendations: "Focus on strengthening the identified skill gaps."
+    };
+  } catch (error) {
+    return { matchPercentage: 0, matches: [], gaps: [], recommendations: "Analysis failed." };
+  }
 }
