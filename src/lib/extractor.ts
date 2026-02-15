@@ -1,48 +1,105 @@
-const pdfjs = require('pdfjs-dist/legacy/build/pdf.js');
+import * as path from 'path';
 
 /**
- * High-Fidelity Neural Extractor
- * Reads documents page-by-page with A-Z precision.
+ * Structure-Preserving Document Extractor
+ * 
+ * Uses y-position analysis of PDF text items to preserve the document's 
+ * actual line-by-line structure — headings stay on their own lines,
+ * paragraphs are separated, and lists remain intact.
  */
 export async function extractTextFromBuffer(buffer: Buffer, mimeType?: string): Promise<string> {
     try {
-        console.log(`[Neural Engine] Initializing Deep Read for: ${mimeType}`);
+        console.log(`[Extractor] Processing document: ${mimeType}`);
 
         if (mimeType === 'application/pdf') {
+            const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+
+            const workerPath = path.resolve(process.cwd(), 'node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs');
+            const workerUrl = new URL(`file:///${workerPath.replace(/\\/g, '/')}`).href;
+
+            // @ts-ignore
+            pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+
             const data = new Uint8Array(buffer);
             const loadingTask = pdfjs.getDocument({
                 data,
                 useSystemFonts: true,
-                disableFontFace: true
+                disableFontFace: true,
             });
 
             const pdf = await loadingTask.promise;
             let fullText = '';
 
-            // Read every page "A-Z" carefully
             for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
                 const textContent = await page.getTextContent();
-                const strings = textContent.items.map((item: any) => item.str);
-                fullText += strings.join(' ') + '\n';
+                const items = textContent.items as any[];
+
+                if (items.length === 0) continue;
+
+                // Build text line-by-line using y-position gaps
+                let lastY: number | null = null;
+                let lineBuffer = '';
+
+                for (const item of items) {
+                    const text = item.str;
+                    if (!text || text.trim() === '') {
+                        // Empty items often indicate spacing
+                        if (item.hasEOL) {
+                            fullText += lineBuffer.trimEnd() + '\n';
+                            lineBuffer = '';
+                            lastY = null;
+                        }
+                        continue;
+                    }
+
+                    const currentY = item.transform ? item.transform[5] : null;
+
+                    if (lastY !== null && currentY !== null) {
+                        const yDiff = Math.abs(lastY - currentY);
+                        if (yDiff > 2) {
+                            // Y-position changed → new line
+                            fullText += lineBuffer.trimEnd() + '\n';
+                            lineBuffer = '';
+
+                            // Large gap → paragraph break
+                            if (yDiff > 15) {
+                                fullText += '\n';
+                            }
+                        }
+                    }
+
+                    lineBuffer += text;
+                    lastY = currentY;
+                }
+
+                // Flush remaining text on the page
+                if (lineBuffer.trim()) {
+                    fullText += lineBuffer.trimEnd() + '\n';
+                }
+
+                // Page break
+                fullText += '\n';
             }
 
-            const sanitized = fullText.replace(/\0/g, '').trim();
-            if (sanitized.length < 10) throw new Error("A-Z Read returned insufficient data.");
+            const sanitized = fullText
+                .replace(/\0/g, '')        // Remove null bytes
+                .replace(/\n{4,}/g, '\n\n\n')  // Cap excessive blank lines
+                .trim();
 
-            console.log(`[Neural Engine] A-Z Read Complete. ${sanitized.length} characters captured.`);
+            if (sanitized.length < 20) {
+                throw new Error("Document returned insufficient text content.");
+            }
+
+            console.log(`[Extractor] Extracted ${sanitized.length} chars with structure preserved.`);
             return sanitized;
         }
 
-        // Fallback for Word/Text using standard UTF-8 with strict sanitization
-        const raw = buffer.toString('utf-8');
-        const cleaned = raw.replace(/[^\x20-\x7E\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim();
-
-        if (cleaned.length < 10) throw new Error("Document structure is unreadable.");
-        return cleaned;
+        // Plain text / other file types — preserve line breaks
+        return buffer.toString('utf-8').replace(/\0/g, '').trim();
 
     } catch (error: any) {
-        console.error("READING ERROR:", error);
-        throw new Error(`Careful Reading Failed: ${error.message}`);
+        console.error("EXTRACTOR ERROR:", error);
+        throw new Error(`Extraction Failed: ${error.message}`);
     }
 }

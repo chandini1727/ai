@@ -45,7 +45,7 @@ model Note {
 model Quiz {
   id        String   @id @default(cuid())
   noteId    String
-  note      Note     @relation(fields: [noteId], references: [id])
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
   questions Json     
   createdAt DateTime @default(now())
 }
@@ -53,7 +53,7 @@ model Quiz {
 model Flashcard {
   id        String   @id @default(cuid())
   noteId    String
-  note      Note     @relation(fields: [noteId], references: [id])
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
   front     String
   back      String
   createdAt DateTime @default(now())
