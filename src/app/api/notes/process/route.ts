@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { generateStudyKit } from "@/lib/ai";
 import { prisma } from "@/lib/prisma";
 import { extractTextFromBuffer } from "@/lib/extractor";
+// Force rebuild: 2026-02-16T12:15:00
 
 export async function POST(req: NextRequest) {
     try {
@@ -27,7 +28,11 @@ export async function POST(req: NextRequest) {
         }
 
         // Generate AI content (Summary, Quiz, Flashcards)
-        const studyKit = await generateStudyKit(content);
+        // Passing req.signal effectively stops processing if user hits "Close" or "Stop"
+        const studyKit = await generateStudyKit(content, req.signal);
+
+        // Final safety check before DB write
+        if (req.signal.aborted) throw new Error("AbortError");
 
         // Save to database
         const note = await prisma.note.create({
@@ -55,6 +60,10 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(note);
     } catch (error: any) {
+        if (error.message === "AbortError" || error.name === "AbortError") {
+            console.log("[API] Note processing aborted by user");
+            return new Response(null, { status: 499 }); // Client Closed Request
+        }
         console.error("Note processing error:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }

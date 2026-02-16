@@ -9,6 +9,7 @@
     --color-border-subtle: #e2e8f0;
     --color-text-primary: #1e293b;
     --color-text-secondary: #64748b;
+    --font-outfit: var(--font-outfit);
 }
 
 :root {
@@ -17,11 +18,12 @@
 }
 
 body {
-    background: var(--background);
+    background: radial-gradient(circle at top right, #eff6ff 0%, #f8fafc 40%);
     color: var(--foreground);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-outfit), 'Inter', system-ui, -apple-system, sans-serif;
     letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
 }
 
 /* Professional Card Style */

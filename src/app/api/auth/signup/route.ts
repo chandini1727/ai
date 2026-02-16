@@ -24,55 +24,28 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "This email is already registered in our system." }, { status: 400 });
         }
 
-        // Securely hash password using Argon2id
-        const hashedPassword = await hashPasswordQuantum(password);
+        // Generate OTP
+        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const expires = new Date(Date.now() + 600000); // 10 minutes
 
-        // Generate post-quantum public key identity
-        const keys = await generateQuantumKeyPair();
+        try {
+            await (prisma as any).otp.upsert({
+                where: { email },
+                update: { code: otpCode, expires },
+                create: { email, code: otpCode, expires },
+            });
 
-        const user = await prisma.user.create({
-            data: {
-                name,
-                email,
-                password: hashedPassword,
-                quantumPubKey: keys.publicKey
-            }
-        });
-
-        // 1. GENERATE VERIFICATION TOKEN
-        // In a production environment, this would be sent via SMTP/SendGrid
-        const verificationToken = Math.random().toString(36).substring(2, 12);
-        await prisma.verificationToken.create({
-            data: {
-                email: user.email,
-                token: verificationToken,
-                expires: new Date(Date.now() + 3600000) // 1 hour expiry
-            }
-        });
-
-        console.log(`[SYSTEM] Verification protocol initiated for ${user.email}. Token matches: ${verificationToken}`);
-
-        // 2. AUTOMATIC AUTHORIZATION (Auto-Login)
-        // We generate a JWT immediately so the user doesn't have to sign in again after registration
-        const token = jwt.sign(
-            {
-                userId: user.id,
-                email: user.email,
-                authorized: true
-            },
-            JWT_SECRET,
-            { expiresIn: "7d" }
-        );
+            const { sendOtpEmail } = await import("@/lib/mail");
+            await sendOtpEmail(email, otpCode);
+        } catch (otpError) {
+            console.error("OTP generation error:", otpError);
+            return NextResponse.json({ error: "Failed to initiate verification protocol." }, { status: 500 });
+        }
 
         return NextResponse.json({
-            message: "Account Successfully Initialized",
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email
-            },
-            token
-        }, { status: 201 });
+            otpRequired: true,
+            message: "Verification code sent. Please check your email."
+        }, { status: 200 });
 
     } catch (error: any) {
         console.error("Critical Registration Error:", error);

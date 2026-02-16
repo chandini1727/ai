@@ -30,6 +30,24 @@ model VerificationToken {
   @@unique([email, token])
 }
 
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model Otp {
+  id      String   @id @default(cuid())
+  email   String   @unique
+  code    String
+  expires DateTime
+
+  @@unique([email, code])
+}
+
 model Note {
   id          String   @id @default(cuid())
   title       String

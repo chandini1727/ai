@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+type RouteContext = { params: Promise<{ id: string }> };
+
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    context: RouteContext
 ) {
     try {
-        const { id } = await params;
+        const { id } = await context.params;
 
         // Manually delete associated clusters to handle foreign key constraints safely
         await prisma.quiz.deleteMany({ where: { noteId: id } });
@@ -25,10 +27,10 @@ export async function DELETE(
 
 export async function PATCH(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    context: RouteContext
 ) {
     try {
-        const { id } = await params;
+        const { id } = await context.params;
         const { title, summary } = await req.json();
 
         const updatedNote = await prisma.note.update({

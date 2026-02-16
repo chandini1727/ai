@@ -3,13 +3,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Shield, ArrowRight, CheckCircle2, Globe, FileText, Target, BookOpen, Layers, Database, Cpu, Lock, UserCircle } from "lucide-react";
+import { BrainCircuit, ArrowRight, CheckCircle2, Globe, FileText, Target, BookOpen, Layers, Database, Cpu, Lock, UserCircle } from "lucide-react";
 
 export default function LandingPage() {
   const techStack = [
-    "Next.js 15", "TypeScript", "Tailwind CSS", "Prisma ORM", "PostgreSQL",
-    "OpenAI GPT-4o", "DeepSeek-V3", "Node.js"
-  ];
+    "Next.js 15", "TypeScript", "BART Transformers", "Tailwind CSS", "PostgreSQL", "PDF-Parse"];
 
   const teamMembers = [
     { name: "Ch Chandini", role: "322103310047", image: "/images/team/chandini.png" },
@@ -19,24 +17,24 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] font-sans selection:bg-blue-100">
+    <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] font-outfit selection:bg-blue-100">
       {/* Professional Navbar */}
-      <nav className="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl border-b border-slate-200 h-16">
-        <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-200">
-              <Shield className="text-white w-5 h-5" />
+      <nav className="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl border-b border-slate-200 h-20">
+        <div className="w-full px-8 md:px-12 h-full flex items-center justify-between">
+          <Link href="/" className="flex items-center space-x-3 group">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-xl shadow-blue-200 group-hover:scale-105 transition-transform">
+              <BrainCircuit className="text-white w-6 h-6" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-slate-900 underline decoration-blue-500/30 decoration-4 underline-offset-4">SmartLearn AI</span>
-          </div>
+            <span className="text-xl font-black tracking-tighter text-slate-900">SmartLearn AI</span>
+          </Link>
 
-          <div className="flex items-center space-x-6">
-            <Link href="/login" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Sign In</Link>
+          <div className="flex items-center space-x-8">
+            <Link href="/login" className="text-xs font-bold text-slate-600 hover:text-blue-600 transition-colors">Sign In</Link>
             <Link
               href="/signup"
-              className="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-100"
+              className="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-xs font-extrabold hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 hover:scale-105 active:scale-95"
             >
-              Get Started
+              Sign Up
             </Link>
           </div>
         </div>
@@ -48,30 +46,30 @@ export default function LandingPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-[11px] font-bold uppercase tracking-wider mb-8"
+            className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-50/50 border border-blue-200 text-blue-700 text-[10px] font-black uppercase tracking-widest mb-10"
           >
-            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.5)]" />
             <span>Insight Innovators presents</span>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-extrabold tracking-tight text-slate-900 mb-8 leading-[1.1]"
+            className="text-2xl md:text-4xl font-extrabold tracking-tight text-slate-900 mb-8 leading-[1.1]"
           >
-            SmartLearn & Career AI: <br />
-            <span className="text-blue-600 italic">Intelligent Study and Resume Assistant.</span>
+            SmartLearn & Research AI: <br />
+            <span className="text-blue-600 italic">Intelligent Study and Academic Assistant.</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto mb-12 leading-relaxed font-medium"
+            className="text-base md:text-lg text-slate-500 max-w-2xl mx-auto mb-12 leading-relaxed font-medium"
           >
-            A professional research and career optimization platform. <br />
+            A professional research and academic optimization platform. <br />
             Transform your study materials into intelligent knowledge assets
-            while aligning your professional profile with global standards.
+            using local neural processing and semantic analysis.
           </motion.p>
 
           <motion.div
@@ -82,10 +80,10 @@ export default function LandingPage() {
           >
             <Link
               href="/signup"
-              className="w-full sm:w-auto bg-slate-900 text-white px-10 py-4 rounded-xl font-bold hover:bg-slate-800 transition-all flex items-center justify-center space-x-3 shadow-xl"
+              className="w-full sm:w-auto bg-slate-900 text-white px-10 py-4 rounded-xl font-outfit font-black hover:bg-slate-800 transition-all flex items-center justify-center space-x-3 shadow-2xl active:scale-95"
             >
-              <span>Initialize Profile</span>
-              <ArrowRight className="w-5 h-5" />
+              <span className="uppercase tracking-widest text-xs">Start Learning</span>
+              <ArrowRight className="w-4 h-4" />
             </Link>
 
           </motion.div>
@@ -95,54 +93,44 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto mt-32 px-6 grid md:grid-cols-3 gap-8 pb-10">
           <USPItem
             icon={<FileText className="w-6 h-6 text-blue-600" />}
-            title="Document Assistant"
-            description="Professional semantic analysis for PDFs and research reports to generate summaries and quizzes."
-            badge="New Engine"
+            title="Smart Summarizer"
+            description="High-speed semantic extraction of key concepts from PDFs using local BART Transformers."
+            badge="Neural Engine"
           />
           <USPItem
-            icon={<Target className="w-6 h-6 text-blue-600" />}
-            title="Resume Matrix"
-            description="AI-driven career gap analysis to align your academic profile with market-leading standards."
-            badge="Real-time"
+            icon={<BookOpen className="w-6 h-6 text-blue-600" />}
+            title="Interactive Quizzes"
+            description="Auto-generated practice assessments to reinforce your knowledge and track learning progress."
+            badge="Active"
           />
           <USPItem
-            icon={<Lock className="w-6 h-6 text-blue-600" />}
-            title="Secure Repository"
-            description="Your data is protected by next-gen PQC lattice-based identity systems for total privacy."
-            badge="Verified"
+            icon={<Layers className="w-6 h-6 text-blue-600" />}
+            title="AI Flashcards"
+            description="Dynamic flashcard generation from your study materials for efficient revision and memory."
+            badge="Optimized"
           />
-        </div>
-
-        {/* Marquee Tech Stack Section */}
-        <div className="py-20 overflow-hidden bg-white border-y border-slate-200">
-          <div className="mb-10 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Core Technology Infrastructure</div>
-          <div className="relative flex">
-            <div className="animate-marquee flex whitespace-nowrap gap-16 items-center">
-              {[...techStack, ...techStack].map((tech, idx) => (
-                <div key={idx} className="flex items-center space-x-4 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-500 cursor-default group">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full group-hover:scale-150 transition-transform" />
-                  <span className="text-3xl font-black text-slate-900 tracking-tighter">{tech}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* Team Section */}
-        <div className="py-32 bg-slate-50">
-          <div className="max-w-7xl mx-auto px-6">
+        <div className="py-20 relative overflow-hidden bg-[#fafbfc]">
+          {/* Decorative background elements */}
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+            style={{ backgroundImage: 'radial-gradient(#2563eb 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+
+          <div className="max-w-7xl mx-auto px-6 relative z-10">
             <div className="mb-16 text-center">
-              <h2 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.5em] mb-4">The Human Foundation</h2>
-              <h3 className="text-4xl font-extrabold text-slate-900 tracking-tight">Our Core Team: <span className="text-blue-600">Insight Innovators</span></h3>
+              <h3 className="text-lg md:text-2xl font-black text-slate-900 tracking-tight leading-tight whitespace-nowrap">Our Core Team: <span className="text-blue-600">Insight Innovators</span></h3>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {teamMembers.map((member, i) => (
-                <div key={i} className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm transition-all text-center">
-                  <div className="w-40 h-40 rounded-3xl mx-auto mb-6 overflow-hidden relative border-4 border-slate-50">
-                    <Image src={member.image} alt={member.name} fill className="object-cover object-top" />
+                <div key={i} className="group bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm transition-all text-center hover:border-blue-400/30 hover:shadow-2xl hover:shadow-blue-500/5">
+                  <div className="w-32 h-32 rounded-[1.5rem] mx-auto mb-6 overflow-hidden relative border-4 border-slate-50 shadow-inner group-hover:scale-105 transition-transform duration-500">
+                    <Image src={member.image} alt={member.name} fill className="object-cover object-top transition-all duration-700" />
                   </div>
-                  <h4 className="text-lg font-black text-slate-900 mb-1">{member.name}</h4>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{member.role}</p>
+                  <h4 className="text-xl font-black text-slate-900 mb-1 tracking-tight">{member.name}</h4>
+                  <div className="w-8 h-1 bg-blue-600/10 mx-auto rounded-full mb-3" />
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{member.role}</p>
                 </div>
               ))}
             </div>
@@ -150,20 +138,36 @@ export default function LandingPage() {
         </div>
       </main>
 
-      {/* Professional Footer */}
-      <footer className="py-16 border-t border-slate-200 bg-white">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-10">
-          <div className="flex flex-col items-center md:items-start gap-3">
-            <div className="flex items-center space-x-2.5">
-              <Shield className="w-5 h-5 text-blue-600" />
-              <span className="text-lg font-black tracking-tight uppercase">SmartLearn AI</span>
+      {/* Main Footer Section */}
+      <footer className="bg-white border-t border-slate-100">
+        <div className="py-20 overflow-hidden border-b border-slate-50 relative">
+          {/* Fade overlays for the marquee edges */}
+          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-white to-transparent z-10" />
+          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-white to-transparent z-10" />
+
+          <div className="mb-10 text-center text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">Core Technology Infrastructure</div>
+          <div className="relative">
+            <div className="flex animate-marquee whitespace-nowrap gap-16 items-center">
+              {[...techStack, ...techStack].map((tech, idx) => (
+                <div key={idx} className="flex items-center space-x-6 cursor-default">
+                  <div className="w-1.5 h-1.5 bg-blue-500/30 rounded-full" />
+                  <span className="text-xl font-bold text-slate-900/60 tracking-tight transition-colors hover:text-blue-600">{tech}</span>
+                </div>
+              ))}
             </div>
-            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-loose">
-              Developed with excellence by <span className="text-slate-900">Insight Innovators</span> <br />
-              © 2026 Academic Workspace Solutions
+          </div>
+        </div>
+
+        <div className="py-20 px-8 md:px-12">
+          <div className="max-w-7xl mx-auto flex flex-col items-center text-center gap-8">
+
+
+            <div className="h-px w-20 bg-slate-100" />
+
+            <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
+              © 2026 Academic Workspace Solutions • Secure Identity Protocol V1.0
             </p>
           </div>
-
         </div>
       </footer>
     </div>
